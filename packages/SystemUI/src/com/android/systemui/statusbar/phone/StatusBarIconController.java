@@ -17,6 +17,7 @@ package com.android.systemui.statusbar.phone;
 import static com.android.systemui.statusbar.phone.StatusBarIconHolder.TYPE_ICON;
 import static com.android.systemui.statusbar.phone.StatusBarIconHolder.TYPE_MOBILE;
 import static com.android.systemui.statusbar.phone.StatusBarIconHolder.TYPE_WIFI;
+import static com.android.systemui.statusbar.phone.StatusBarIconHolder.TYPE_IMS;
 
 import android.annotation.Nullable;
 import android.content.Context;
@@ -42,8 +43,10 @@ import com.android.systemui.statusbar.BaseStatusBarWifiView;
 import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.StatusBarMobileView;
 import com.android.systemui.statusbar.StatusBarWifiView;
+import com.android.systemui.statusbar.StatusBarImsView;
 import com.android.systemui.statusbar.StatusIconDisplayable;
 import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider;
+import com.android.systemui.statusbar.connectivity.ImsIconState;
 import com.android.systemui.statusbar.phone.StatusBarSignalPolicy.CallIndicatorIconState;
 import com.android.systemui.statusbar.phone.StatusBarSignalPolicy.MobileIconState;
 import com.android.systemui.statusbar.phone.StatusBarSignalPolicy.WifiIconState;
@@ -95,6 +98,7 @@ public interface StatusBarIconController {
     void setNoCallingIcons(String slot, List<CallIndicatorIconState> states);
 
     public void setIconVisibility(String slot, boolean b);
+    public void setImsIcon(String slot, ImsIconState state);
 
     /**
      * Sets the live region mode for the icon
@@ -398,6 +402,8 @@ public interface StatusBarIconController {
 
                 case TYPE_MOBILE:
                     return addMobileIcon(index, slot, holder.getMobileState());
+                case TYPE_IMS:
+                    return addImsIcon(index, slot, holder.getImsState());
             }
 
             return null;
@@ -408,6 +414,13 @@ public interface StatusBarIconController {
                 StatusBarIcon icon) {
             StatusBarIconView view = onCreateStatusBarIconView(slot, blocked);
             view.set(icon);
+            mGroup.addView(view, index, onCreateLayoutParams());
+            return view;
+        }
+
+        protected StatusBarImsView addImsIcon(int index, String slot, ImsIconState state) {
+            StatusBarImsView view = onCreateStatusBarImsView(slot);
+            view.applyImsState(state);
             mGroup.addView(view, index, onCreateLayoutParams());
             return view;
         }
@@ -450,6 +463,11 @@ public interface StatusBarIconController {
 
         private StatusBarIconView onCreateStatusBarIconView(String slot, boolean blocked) {
             return new StatusBarIconView(mContext, slot, null, blocked);
+        }
+
+        private StatusBarImsView onCreateStatusBarImsView(String slot) {
+            StatusBarImsView view = StatusBarImsView.fromContext(mContext, slot);
+            return view;
         }
 
         private StatusBarWifiView onCreateStatusBarWifiView(String slot) {
@@ -524,6 +542,10 @@ public interface StatusBarIconController {
                     return;
                 case TYPE_MOBILE:
                     onSetMobileIcon(viewIndex, holder.getMobileState());
+                    return;
+                case TYPE_IMS:
+                    onSetImsIcon(viewIndex, holder.getImsState());
+                    return;
                 default:
                     break;
             }
@@ -556,6 +578,13 @@ public interface StatusBarIconController {
                 Context mobileContext = mMobileContextProvider
                         .getMobileContextForSub(state.subId, mContext);
                 mDemoStatusIcons.updateMobileState(state, mobileContext);
+            }
+        }
+
+        public void onSetImsIcon(int viewIndex, ImsIconState state) {
+            StatusBarImsView view = (StatusBarImsView) mGroup.getChildAt(viewIndex);
+            if (view != null) {
+                view.applyImsState(state);
             }
         }
 
