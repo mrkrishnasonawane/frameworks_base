@@ -375,6 +375,43 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
         }
 
         @Override
+        public void onNavBarButtonAlphaChanged(float alpha, boolean animate) {
+            if (!mIsCurrentUserSetup) {
+                // If the current user is not yet setup, then don't update any button alphas
+                return;
+            }
+            if (QuickStepContract.isLegacyMode(mNavBarMode)) {
+                // Don't allow the bar buttons to be affected by the alpha
+                return;
+            }
+
+            ButtonDispatcher buttonDispatcher = null;
+            boolean forceVisible = false;
+            boolean isGesturalMode = QuickStepContract.isGesturalMode(mNavBarMode);
+            boolean forceHideHomeHandle = isGesturalMode && mView.isHomeHandleForceHidden();
+            if (isGesturalMode) {
+                // Disallow home handle animations when in gestural
+                animate = false;
+                forceVisible = mAllowForceNavBarHandleOpaque && mForceNavBarHandleOpaque;
+                buttonDispatcher = mView.getHomeHandle();
+                if (getBarTransitions() != null) {
+                    getBarTransitions().setBackgroundOverrideAlpha(alpha);
+                }
+            } else if (QuickStepContract.isSwipeUpMode(mNavBarMode)) {
+                buttonDispatcher = mView.getBackButton();
+            }
+            if (buttonDispatcher != null) {
+                buttonDispatcher.setVisibility(
+                        (!forceHideHomeHandle && (forceVisible || alpha > 0))
+                        ? View.VISIBLE
+                        : View.INVISIBLE);
+                buttonDispatcher.setAlpha(forceVisible ? 1f : alpha,
+                        forceHideHomeHandle ? false : animate);
+
+            }
+        }
+
+        @Override
         public void onHomeRotationEnabled(boolean enabled) {
             mView.getRotationButtonController().setHomeRotationEnabled(enabled);
         }
