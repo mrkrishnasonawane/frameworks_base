@@ -150,6 +150,18 @@ public abstract class KeyguardMessageArea extends TextView implements SecurityMe
         setVisibility(TextUtils.isEmpty(status) || (!mIsVisible) ? INVISIBLE : VISIBLE);
         setText(status);
         updateTextColor();
+        ColorStateList colorState = mDefaultColorState;
+        if (mNextMessageColorState != null) {
+            if (mNextMessageColorState.getDefaultColor() != DEFAULT_COLOR) {
+                colorState = mNextMessageColorState;
+                mNextMessageColorState = ColorStateList.valueOf(DEFAULT_COLOR);
+            }
+        }
+        if (mAltBouncerShowing) {
+            // alt bouncer has a black scrim, so always show the text in white
+            colorState = ColorStateList.valueOf(Color.WHITE);
+        }
+        setTextColor(colorState);
     }
 
     /**
