@@ -44,6 +44,9 @@ import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+
 /**
  * Performs the animated transition between the QQS and QS views.
  *
@@ -143,6 +146,11 @@ public class QSAnimator implements QSHost.Callback, PagedTileLayout.PageListener
     private int[] mTmpLoc1 = new int[2];
     private int[] mTmpLoc2 = new int[2];
 
+    private final Function1<Boolean, Unit> mMediaHostVisibilityListener = (visible) -> {
+        requestAnimatorUpdate();
+        return null;
+    };
+
     @Inject
     public QSAnimator(QS qs, QuickQSPanel quickPanel, QuickStatusBarHeader quickStatusBarHeader,
             QSPanelController qsPanelController,
@@ -211,7 +219,29 @@ public class QSAnimator implements QSHost.Callback, PagedTileLayout.PageListener
     }
 
     @Override
-    public void onViewAttachedToWindow(@NonNull View view) {
+    public void onViewAttachedToWindow(@Nullable View v) {
+        mTunerService.addTunable(this, ALLOW_FANCY_ANIMATION,
+                MOVE_FULL_ROWS);
+        mQuickQSPanelController.mMediaHost.addVisibilityChangeListener(mMediaHostVisibilityListener);
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(View v) {
+        mHost.removeCallback(this);
+        mTunerService.removeTunable(this);
+        mQuickQSPanelController.mMediaHost.removeVisibilityChangeListener(mMediaHostVisibilityListener);
+    }
+
+    @Override
+    public void onTuningChanged(String key, String newValue) {
+        if (ALLOW_FANCY_ANIMATION.equals(key)) {
+            mAllowFancy = TunerService.parseIntegerSwitch(newValue, true);
+            if (!mAllowFancy) {
+                clearAnimationState();
+            }
+        } else if (MOVE_FULL_ROWS.equals(key)) {
+            mFullRows = TunerService.parseIntegerSwitch(newValue, true);
+        }
         updateAnimators();
     }
 
@@ -561,6 +591,12 @@ public class QSAnimator implements QSHost.Callback, PagedTileLayout.PageListener
         mBrightnessOpacityAnimator = null;
         View qsBrightness = mQsPanelController.getBrightnessView();
         View qqsBrightness = mQuickQSPanelController.getBrightnessView();
+
+        if (mTunerService.getValue(QSPanel.QS_SHOW_BRIGHTNESS_SLIDER, 1) == 0) {
+            qsBrightness.setVisibility(View.GONE);
+            qqsBrightness.setVisibility(View.GONE);
+        }
+
         if (qqsBrightness != null && qqsBrightness.getVisibility() == View.VISIBLE) {
             // animating in split shade mode
             mAnimatedQsViews.add(qsBrightness);
@@ -572,7 +608,8 @@ public class QSAnimator implements QSHost.Callback, PagedTileLayout.PageListener
                     // portrait orientation before
                     .addFloat(qsBrightness, "sliderScaleY", 0.3f, 1)
                     .addFloat(qqsBrightness, "translationY", 0, translationY)
-                    .setInterpolator(mQSExpansionPathInterpolator.getYInterpolator())
+                    .setInterpolator(mQuickQSPanelController.mMediaHost.getVisible() ?
+                            Interpolators.ALPHA_OUT : Interpolators.SLOWDOWN)
                     .build();
         } else if (qsBrightness != null) {
             // The brightness slider's visible bottom edge must maintain a constant margin from the
