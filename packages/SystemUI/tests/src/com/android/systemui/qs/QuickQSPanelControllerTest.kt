@@ -62,8 +62,21 @@ class QuickQSPanelControllerTest : SysuiTestCase() {
 
     private val uiEventLogger = UiEventLoggerFake()
     private val dumpManager = DumpManager()
+<<<<<<< HEAD
 
     private var usingCollapsedLandscapeMedia = true
+=======
+    @Mock
+    private lateinit var tile: QSTile
+    @Mock
+    private lateinit var tileLayout: TileLayout
+    @Mock
+    private lateinit var tileView: QSTileView
+    @Mock
+    private lateinit var quickQsBrightnessController: QuickQSBrightnessController
+    @Captor
+    private lateinit var captor: ArgumentCaptor<QSPanel.OnConfigurationChangedListener>
+>>>>>>> 570e4683d541 (Revert "Remove QQS brightness controller")
 
     private lateinit var controller: TestQuickQSPanelController
 
@@ -88,7 +101,13 @@ class QuickQSPanelControllerTest : SysuiTestCase() {
                 metricsLogger,
                 uiEventLogger,
                 qsLogger,
+<<<<<<< HEAD
                 dumpManager)
+=======
+                dumpManager,
+                quickQsBrightnessController
+        )
+>>>>>>> 570e4683d541 (Revert "Remove QQS brightness controller")
 
         controller.init()
     }
@@ -134,6 +153,7 @@ class QuickQSPanelControllerTest : SysuiTestCase() {
     }
 
     @Test
+<<<<<<< HEAD
     fun mediaExpansion_afterConfigChange_landscape_collapsedInLandscapeFalse_remainsExpanded() {
         verify(quickQSPanel).addOnConfigurationChangedListener(captor.capture())
         reset(mediaHost)
@@ -143,6 +163,10 @@ class QuickQSPanelControllerTest : SysuiTestCase() {
         captor.allValues.forEach { it.onConfigurationChange(Configuration.EMPTY) }
 
         verify(mediaHost).expansion = MediaHostState.EXPANDED
+=======
+    fun testBrightnessVisibilityRefreshedWhenConfigurationChanged() {
+        verify(quickQsBrightnessController).refreshVisibility(anyBoolean())
+>>>>>>> 570e4683d541 (Revert "Remove QQS brightness controller")
     }
 
     class TestQuickQSPanelController(
