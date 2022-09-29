@@ -362,6 +362,5 @@ public class SecureSettingsValidators {
         VALIDATORS.put(Secure.FEATURE_TOUCH_HOVERING, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.SWAP_CAPACITIVE_KEYS, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.GESTURE_NAVBAR_LENGTH_MODE, new InclusiveIntegerRangeValidator(0, 3));
-        VALIDATORS.put(Secure.LAUNCHER_HIDDEN_APPS, APP_LIST_VALIDATOR);
     }
 }
