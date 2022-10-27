@@ -26,4 +26,7 @@
     <dimen name="navigation_home_handle_width_medium">140dp</dimen>
     <dimen name="navigation_home_handle_width_long">170dp</dimen>
     <dimen name="navigation_home_handle_width_very_long">190dp</dimen>
+    
+    <!-- Bluetooth dialog -->
+    <dimen name="bluetooth_dialog_active_device_bottom_margin">4dp</dimen>
 </resources>
