@@ -2869,8 +2869,7 @@ class StorageManagerService extends IStorageManager.Stub
                             ", min gc sleep time(ms): " + mMinGCSleepTime +
                             ", target dirty ratio: " + mTargetDirtyRatio);
                 mVold.setGCUrgentPace(avgWriteAmount, mMinSegmentsThreshold, mDirtyReclaimRate,
-                                      mSegmentReclaimWeight, sSmartIdleMaintPeriod,
-                                      mMinGCSleepTime, mTargetDirtyRatio);
+                                      mSegmentReclaimWeight, sSmartIdleMaintPeriod);
             } else {
                 Slog.i(TAG, "Skipping smart idle maintenance - block based checkpoint in progress");
             }
